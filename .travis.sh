@@ -35,17 +35,19 @@ fi
 
 # before_install
 linux-before_install() {
-	sudo add-apt-repository -y ppa:nschloe/cmake-backports
-	sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-	sudo apt-get -qq update
+	# sudo add-apt-repository -y ppa:nschloe/cmake-backports
+	# sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+	# sudo apt-get -qq update
+	true
 }
 
 # install
 linux-install() {
+	cmake --version || true
+	gcc --version
 	sudo apt-get -qq install cmake\
-	                         cmake-data\
-	                         gcc-4.7\
-	                         g++-4.7\
+	                         gcc\
+	                         g++\
 	                         libasound2-dev\
 	                         libgl1-mesa-dev\
 	                         libpulse-dev\
@@ -54,8 +56,8 @@ linux-install() {
 	                         portaudio19-dev\
 	                         nasm\
 	                         zip
-	sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.7 100\
-	                         --slave   /usr/bin/g++ g++ /usr/bin/g++-4.7
+	cmake --version
+	gcc --version
 }
 
 # before_script

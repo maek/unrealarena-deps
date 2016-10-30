@@ -3,10 +3,11 @@ language: cpp
 compiler: gcc
 
 sudo: required
+dist: trusty
 
 os:
   - linux
-  - osx
+  # - osx
 
 before_install:
   - ./.travis.sh "before_install"
