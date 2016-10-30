@@ -4,15 +4,6 @@ compiler: gcc
 
 sudo: required
 
-notifications:
-  irc:
-    channels:
-      - "irc.quakenet.org#unrealarena"
-    template:
-      - "%{repository_slug} (%{branch}) \"%{commit_subject}\" [%{result}]"
-      - "%{build_url}"
-      - "%{compare_url}"
-
 os:
   - linux
   - osx
@@ -35,9 +26,9 @@ before_deploy:
 deploy:
   provider: releases
   api_key:
-    secure: BQE/kI6aDtG0VBWV6rfRECyZLNMUNJT+etHYqRs5DIOGsBQXN8V0zKZYMLADAKWw+kSCyRMWeLkb5nymSIbEhiO2fMkQqsCw2J9ICprRqXK5DCQSCxbcIsmDe9zeADhiG5n+a6tLNcf2h1B5OqBnTNumzLepfmLy8RavyEuncp4Nyo0pBOkNQAJiuKxJPrqM0Va9TbNxr8Mgo74AhaWLM8elfM+iatSmsRD7w1Gg0NzZZKSTtNOofJwvkNc9/WJEOCZVeg/VUg18LWDZkWsdxAu57mD5wiia2xo48Yd6zEbQV02fvc49rN7bKfB19k2NhomjMjIFnakqVRWoQC3F65XxgImKhfkQ1+PXYy2QBoyvzS7MbVnCZQwrKk1B05Uf7ScUxK2hULhgfWV60nIlUFtJr7lXrNM+2NvWLl3dUk8jRfMvNBc4Sd+c504wYXvpEhg9iLzx9UjKMEpJEPWilPdZ8rzkTbZGn2h82He0fqXV77Kg9r6Y6OfAjcaKTFeg+F3vBgeRmskHXRZESmkZoWYk+M0NQb09azl/8ydj36twv0EejiqkShhQXn0Q/Vu3nAml9JIxeI4ZQ2Ju7bDVvp/YergjuFjYqfi/wDnEAtLtZdpRl+G+IMV7B9sfpDuYmooUtYLLFR3J7P+q/1RS7adUABfz43DJ7fY00iy7zYE=
+    secure: JQ6ecaKC7t6g8QD/vn0h/vJij9FlaTtmpK18Osgu0BX5vdPPAwgLoAjz5pqcO6BZnctkZkM7Ttrklnubh36pEuqdR6SzGyXHT8bylkU1g+8ZybIkKv7pia/QMJ8F8vzD63h0b5gnmFIzaBeYdszEeVc6q3DjcgLLYHG65ry/wCcleZw+xTZy3lR3N/4haJkKRDZRcnB5EwRjLYi1EyxfiunRfQ/DWxxY3jQJQCugQJ8J6FG92QhalBRTHAxMF22cvhvoUWKMmZ/qgpOpT2hyVLAjF1dRlquv7JA3wAzDamNGFaf88UBODX0u8rFjnk/Gq90zN69pKxj5oRBsQeLSLlr9wm6+99l5jOy/2LdTqSvWfQI3yOODAtqGK3OcQPF0j2+uPs9WUxzkEzVL+ittgq0I3Dg3Sv71m5i7ahvZDut6X6U7Qrx0QRvczAyZ6QgGNn8HXPWfQzW/2tQ23Hdqu/El6h1ZLKPyzXoh9tbbszul7r5LDIAuxCvN5gO0p+CyB3JzPsWz5/CzVyQTLrufpkRAwGGebOR9FYhPqTCLrAIFDtDk/qEO76R64ZJ9Dw9tqK6Luq4UwlJ+LEUWtQdaeOXTTMpJxzPVTIsijlqqSQz9mwaN5MkwtnZPpIuF6TBu66DJi1hgzwpRfZrxV6DUoeJy5VMqG/qHxQ7Ez2XWq4M=
   file: "${TRAVIS_OS_NAME}.zip"
   skip_cleanup: true
   on:
     tags: true
-    repo: unrealarena/unrealarena-deps
+    repo: maek/unrealarena-deps
