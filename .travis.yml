@@ -1,11 +1,13 @@
 language: cpp
 
-matrix:
-  include:
-    - os: linux
-      dist: trusty
-      sudo: required
-    # - os: osx
+compiler: gcc
+
+dist: trusty
+sudo: required
+
+os:
+  - linux
+  # - osx
 
 before_install:
   - ./.travis.sh before_install
