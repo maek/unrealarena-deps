@@ -2,21 +2,8 @@ language: cpp
 
 compiler: gcc
 
-# sudo: required
+sudo: required
 dist: trusty
-sudo: false
-group: beta
-
-addons:
-  apt:
-    packages:
-      - libasound2-dev
-      - libgl1-mesa-dev
-      - libpulse-dev
-      - libx11-dev
-      - libxext-dev
-      - nasm
-      - portaudio19-dev
 
 os:
   - linux
