@@ -35,18 +35,20 @@ fi
 
 # before_install
 linux-before_install() {
-	sudo apt-get -qq update
+	# sudo apt-get -qq update
+	true
 }
 
 # install
 linux-install() {
-	sudo apt-get -qq install libasound2-dev\
-	                         libgl1-mesa-dev\
-	                         libpulse-dev\
-	                         libx11-dev\
-	                         libxext-dev\
-	                         nasm\
-	                         portaudio19-dev
+	# sudo apt-get -qq install libasound2-dev\
+	#                          libgl1-mesa-dev\
+	#                          libpulse-dev\
+	#                          libx11-dev\
+	#                          libxext-dev\
+	#                          nasm\
+	#                          portaudio19-dev
+	true
 }
 
 # before_script
