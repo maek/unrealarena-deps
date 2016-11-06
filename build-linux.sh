@@ -190,15 +190,13 @@ build_curl ()
 	_build "${LIBNAME}"
 	_install "${LIBNAME}"
 
-	# rm -rf "${DESTDIR}/bin/curl"*
+	rm -rf "${DESTDIR}/bin/curl"*
 	rm -rf "${DESTDIR}/lib/libcurl.la"
 	rm -rf "${DESTDIR}/share/aclocal/libcurl.m4"
 	rm -rf "${DESTDIR}/share/man/man1/curl"*
 	rm -rf "${DESTDIR}/share/man/man3/curl"*
 	rm -rf "${DESTDIR}/share/man/man3/CURL"*
 	rm -rf "${DESTDIR}/share/man/man3/libcurl"*
-
-	"${DESTDIR}/bin/curl-config" --cflags --static-libs
 
 	_done
 }
