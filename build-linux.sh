@@ -18,215 +18,175 @@
 # Build all the external dependencies needed by Unreal Arena on Linux.
 
 
-################################################################################
+#-------------------------------------------------------------------------------
 # Setup
-################################################################################
-
-# Arguments parsing
-if [ $# -gt 0 ]; then
-	if [ $# -eq 1 -a "${1}" == "-v" ]; then
-		VERBOSE=1
-	else
-		echo "Usage: ${0} [-v]"
-		exit 1
-	fi
-fi
-
-# Enable exit on error
-set -e
+#-------------------------------------------------------------------------------
 
 # Dependencies version
-DEPS_VERSION=4
+DEPS_VERSION="5"
 
 # Libraries versions
-CURL_VERSION=7.43.0
-FREETYPE_VERSION=2.6
-GEOIP_VERSION=1.6.4
-GLEW_VERSION=1.12.0
-GMP_VERSION=6.0.0
-JPEG_VERSION=1.4.1
-LUA_VERSION=5.3.1
-NACLSDK_VERSION=44.0.2403.155
-NCURSES_VERSION=5.9
-NETTLE_VERSION=3.1.1
-OGG_VERSION=1.3.2
-OPENAL_VERSION=1.16.0
-OPUSFILE_VERSION=0.6
-OPUS_VERSION=1.1
-PNG_VERSION=1.6.18
-SDL2_VERSION=2.0.3
-SPEEX_VERSION=1.2rc2  # 1.2rc1
-THEORA_VERSION=1.1.1
-VORBIS_VERSION=1.3.5
-WEBP_VERSION=0.4.3
-ZLIB_VERSION=1.2.8
+CURL_VERSION="7.43.0"
+FREETYPE_VERSION="2.6"
+GEOIP_VERSION="1.6.4"
+GLEW_VERSION="1.12.0"
+GMP_VERSION="6.0.0"
+JPEG_VERSION="1.4.1"
+LUA_VERSION="5.3.1"
+NACLSDK_VERSION="44.0.2403.155"
+NCURSES_VERSION="5.9"
+NETTLE_VERSION="3.1.1"
+OGG_VERSION="1.3.2"
+OPENAL_VERSION="1.16.0"
+OPUSFILE_VERSION="0.6"
+OPUS_VERSION="1.1"
+PNG_VERSION="1.6.18"
+SDL2_VERSION="2.0.3"
+THEORA_VERSION="1.1.1"
+VORBIS_VERSION="1.3.5"
+WEBP_VERSION="0.4.3"
+ZLIB_VERSION="1.2.8"
 
 # Build environment
 ROOTDIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
-CACHEDIR="${ROOTDIR}/cache"
 BUILDDIR="${ROOTDIR}/build"
+CACHEDIR="${ROOTDIR}/cache"
 DESTDIR="${ROOTDIR}/linux-${DEPS_VERSION}"
-mkdir -p "${CACHEDIR}"
-mkdir -p "${BUILDDIR}"
-rm -rf "${DESTDIR}"
-mkdir -p "${DESTDIR}"
 
 # Compiler
-export HOST="x86_64-unknown-linux-gnu"
-export CFLAGS="-m64 -fPIC -O2 -pipe"  # -fPIC is needed for 64-bit static libraries
-export CXXFLAGS="-m64 -fPIC -O2 -pipe"  # -fPIC is needed for 64-bit static libraries
+# export CHOST="x86_64-unknown-linux-gnu"  # FIXME
+# export CFLAGS="-fPIC -O3 -pipe"  # -fPIC is needed for 64-bit static libraries  # FIXME
+# export CXXFLAGS="-fPIC -O3 -pipe"  # -fPIC is needed for 64-bit static libraries  # FIXME
+export CFLAGS="-O3 -pipe"
+export CXXFLAGS="-O3 -pipe"
 export CPPFLAGS="${CPPFLAGS:-} -I${DESTDIR}/include"
 export LDFLAGS="${LDFLAGS:-} -L${DESTDIR}/lib -L${DESTDIR}/lib64"
 export PATH="${DESTDIR}/bin:${PATH}"
 export PKG_CONFIG_PATH="${DESTDIR}/lib/pkgconfig:${DESTDIR}/lib64/pkgconfig:${PKG_CONFIG_PATH}"
 export CMAKE_BUILD_TYPE="Release"
 
-# Limit parallel jobs to avoid being killed when on Travis CI
-export MAKEFLAGS="-j$(($(nproc)<8?$(nproc):8))"
+# Limit parallel jobs to avoid being killed by Travis CI
+export MAKEFLAGS="-j$(($(nproc) < 8 ? $(nproc) : 8))"
 
 
-################################################################################
+#-------------------------------------------------------------------------------
 # Utilities
-################################################################################
+#-------------------------------------------------------------------------------
 
-# Enable quiet mode
-# Usage: _begin_quiet
-_begin_quiet() {
-	exec 3>&1
-	exec 4>&2
-	exec &> /dev/null
-}
-
-# Disable quiet mode
-# Usage: _end_quiet
-_end_quiet() {
-	exec 1>&3 3>&-
-	exec 2>&4 4>&-
-}
-
-# Download a package (if it is not in the cache) and extract it
-# Usage: _get <URL>
-_get() {
-	URL="${1}"
-	FILENAME="$(basename "${URL}")"
+# Download the archive and extract it
+_get ()
+{
+	local URL="$1"
+	local FILENAME="${URL##*/}"
 
 	# Download
-	echo "Downloading ${FILENAME} ..."
-	if [ ! -f "${CACHEDIR}/${FILENAME}" ]; then
+	if ! [[ -f "${CACHEDIR}/${FILENAME}" ]]
+	then
+		echo "> Downloading '${FILENAME}'..."
 		curl -Lso "${CACHEDIR}/${FILENAME}" "${URL}"
 	fi
 
 	# Extract
-	echo "Extracting ${FILENAME} ..."
-	case "${FILENAME}" in
+	echo "> Extracting '${FILENAME}'..."
+	case ${FILENAME} in
 		*.tar.bz2|*.tar.gz|*.tgz)
 			tar xf "${CACHEDIR}/${FILENAME}" -C "${BUILDDIR}" --recursive-unlink
 			;;
 		*)
-			echo "Error: unknown archive type (${FILENAME})"
+			echo "Error: unknown archive type '${FILENAME}'" >&2
 			exit 1
 			;;
 	esac
 }
 
-# Change to the library directory
-# Usage: _cd <LIBDIR>
-_cd() {
-	LIBDIR="${1}"
+# Change directory
+_cd ()
+{
+	local LIBDIR="$1"
 
 	cd "${BUILDDIR}/${LIBDIR}"
 }
 
-# Notify the beginning of the prepare stage
-# Usage: _prepare <LIBNAME>
-_prepare() {
-	LIBNAME="${1}"
+# Configure the build (configure)
+_configure ()
+{
+	local LIBNAME="$1"
+	local OPTIONS="${@:2}"
 
-	echo "Preparing ${LIBNAME} ..."
-}
-
-# Prepare for build (configure)
-# Usage: _configure <LIBNAME> <OPTIONS>
-_configure() {
-	LIBNAME="${1}"
-	OPTIONS="${@:2}"
-
-	[[ $VERBOSE ]] || _begin_quiet
-
-	./configure --build="${HOST}"\
-	            --prefix="${DESTDIR}"\
+	echo "> Configuring '${LIBNAME}'..."
+	./configure --prefix="${DESTDIR}"\
 	            ${OPTIONS}
 
-	[[ $VERBOSE ]] || _end_quiet
+	# FIXME
+	# ./configure --build="${CHOST}"\
+	#             --prefix="${DESTDIR}"\
 }
 
-# Prepare for build (cmake)
-# Usage: _cmake <LIBNAME> <OPTIONS>
-_cmake() {
-	LIBNAME="${1}"
-	OPTIONS="${@:2}"
-
-	[[ $VERBOSE ]] || _begin_quiet
+# Configure the build (cmake)
+_cmake ()
+{
+	local LIBNAME="$1"
+	local OPTIONS="${@:2}"
 
 	cmake -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}"\
 	      -DCMAKE_INSTALL_PREFIX="${DESTDIR}"\
 	      ${OPTIONS}
-
-	[[ $VERBOSE ]] || _end_quiet
 }
 
-# Build a package
-# Usage: _build <LIBNAME>
-_build() {
-	LIBNAME="${1}"
+# Build
+_build ()
+{
+	local LIBNAME="$1"
 
-	echo "Building ${LIBNAME} ..."
-
-	[[ $VERBOSE ]] || _begin_quiet
+	echo "> Building '${LIBNAME}'..."
 
 	make
-
-	[[ $VERBOSE ]] || _end_quiet
 }
 
-# Install a package
-# Usage: _install <LIBNAME>
-_install() {
-	LIBNAME="${1}"
+# Install
+_install ()
+{
+	local LIBNAME="$1"
 
-	echo "Installing ${LIBNAME} ..."
-
-	[[ $VERBOSE ]] || _begin_quiet
+	echo "> Installing '${LIBNAME}'..."
 
 	make install
-
-	[[ $VERBOSE ]] || _end_quiet
 }
 
-# Notify successful library installation
-# Usage: _done
-_done() {
-	echo "Done!"
+# Success!
+_done ()
+{
+	echo "> Success!"
 }
 
 
-################################################################################
-# Routines
-################################################################################
+#-------------------------------------------------------------------------------
+# Subroutines
+#-------------------------------------------------------------------------------
 
 # Build curl
-build_curl() {
-	LIBNAME="curl"
+build_curl ()
+{
+	local LIBNAME="curl"
 
 	_get "http://curl.haxx.se/download/curl-${CURL_VERSION}.tar.bz2"
 	_cd "curl-${CURL_VERSION}"
-	_prepare "${LIBNAME}"
 	_configure "${LIBNAME}" --disable-shared\
+	                        --disable-dict\
+	                        --disable-file\
+	                        --disable-gopher\
+	                        --disable-imap\
 	                        --disable-ldap\
-	                        --without-ssl\
-	                        --without-libssh2\
+	                        --disable-pop3\
+	                        --disable-rtsp\
+	                        --disable-smtp\
+	                        --disable-telnet\
+	                        --disable-tftp\
+	                        --without-libidn\
 	                        --without-librtmp\
-	                        --without-libidn
+	                        --without-libssh2\
+	                        --without-ssl
+
 	_build "${LIBNAME}"
 	_install "${LIBNAME}"
 
@@ -247,7 +207,6 @@ build_freetype() {
 
 	_get "http://download.savannah.gnu.org/releases/freetype/freetype-${FREETYPE_VERSION}.tar.bz2"
 	_cd "freetype-${FREETYPE_VERSION}"
-	_prepare "${LIBNAME}"
 
 	sed -i -e "/AUX.*.gxvalid/s@^# @@" -e "/AUX.*.otvalid/s@^# @@" modules.cfg
 	# sed -ri -e 's:.*(#.*SUBPIXEL.*) .*:\1:' include/config/ftoption.h
@@ -273,7 +232,6 @@ build_geoip() {
 
 	_get "https://github.com/maxmind/geoip-api-c/archive/v${GEOIP_VERSION}.tar.gz"
 	_cd "geoip-api-c-${GEOIP_VERSION}"
-	_prepare "${LIBNAME}"
 
 	autoreconf -fi &> /dev/null
 
@@ -294,7 +252,6 @@ build_glew() {
 
 	_get "http://downloads.sourceforge.net/project/glew/glew/${GLEW_VERSION}/glew-${GLEW_VERSION}.tgz"
 	_cd "glew-${GLEW_VERSION}"
-	_prepare "${LIBNAME}"
 
 	export GLEW_DEST="${DESTDIR}"
 
@@ -312,7 +269,6 @@ build_gmp() {
 
 	_get "https://gmplib.org/download/gmp/gmp-${GMP_VERSION}a.tar.bz2"
 	_cd "gmp-${GMP_VERSION}"
-	_prepare "${LIBNAME}"
 	_configure "${LIBNAME}" --disable-shared
 	_build "${LIBNAME}"
 	_install "${LIBNAME}"
@@ -330,7 +286,6 @@ build_jpeg() {
 
 	_get "http://downloads.sourceforge.net/project/libjpeg-turbo/${JPEG_VERSION}/libjpeg-turbo-${JPEG_VERSION}.tar.gz"
 	_cd "libjpeg-turbo-${JPEG_VERSION}"
-	_prepare "${LIBNAME}"
 
 	sed -i -e "/^docdir/ s:$:/libjpeg-turbo-${JPEG_VERSION}:" Makefile.in
 
@@ -363,7 +318,6 @@ build_lua() {
 
 	_get "http://www.lua.org/ftp/lua-${LUA_VERSION}.tar.gz"
 	_cd "lua-${LUA_VERSION}"
-	_prepare "${LIBNAME}"
 
 	sed -i -e "/^PLAT=/s:none:linux:" -e "/^INSTALL_TOP=/s:/usr/local:${DESTDIR}:" Makefile
 	sed -i -e "/^CFLAGS=/s:-O2:-fPIC -O2:" src/Makefile
@@ -384,7 +338,7 @@ build_naclports() {
 	_get "https://storage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/${NACLSDK_VERSION}/naclports.tar.bz2"
 	_cd "pepper_${NACLSDK_VERSION%%.*}"
 
-	echo "Installing ${LIBNAME} ..."
+	echo "Installing '${LIBNAME}'..."
 
 	mkdir -p "${DESTDIR}/pnacl_deps/include"
 	mkdir -p "${DESTDIR}/pnacl_deps/lib"
@@ -414,7 +368,7 @@ build_naclsdk() {
 	_get "https://storage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/${NACLSDK_VERSION}/naclsdk_linux.tar.bz2"
 	_cd "pepper_${NACLSDK_VERSION%%.*}"
 
-	echo "Installing ${LIBNAME} ..."
+	echo "Installing '${LIBNAME}'..."
 
 	cp -a "tools/sel_ldr_x86_64" "${DESTDIR}/sel_ldr"
 	cp -a "tools/irt_core_x86_64.nexe" "${DESTDIR}/irt_core-x86_64.nexe"
@@ -447,7 +401,6 @@ build_ncurses() {
 
 	_get "http://ftp.gnu.org/pub/gnu/ncurses/ncurses-${NCURSES_VERSION}.tar.gz"
 	_cd "ncurses-${NCURSES_VERSION}"
-	_prepare "${LIBNAME}"
 
 	curl -Lso "ncurses-5.9-gcc5_buildfixes-1.patch" "http://www.linuxfromscratch.org/patches/downloads/ncurses/ncurses-5.9-gcc5_buildfixes-1.patch"
 	patch -sNp1 -i ncurses-5.9-gcc5_buildfixes-1.patch
@@ -476,7 +429,6 @@ build_nettle() {
 
 	_get "http://www.lysator.liu.se/~nisse/archive/nettle-${NETTLE_VERSION}.tar.gz"
 	_cd "nettle-${NETTLE_VERSION}"
-	_prepare "${LIBNAME}"
 	_configure "${LIBNAME}" --disable-shared\
 	                        --disable-documentation
 	_build "${LIBNAME}"
@@ -495,7 +447,6 @@ build_ogg() {
 
 	_get "http://downloads.xiph.org/releases/ogg/libogg-${OGG_VERSION}.tar.gz"
 	_cd "libogg-${OGG_VERSION}"
-	_prepare "${LIBNAME}"
 	_configure "${LIBNAME}" --disable-shared
 	_build "${LIBNAME}"
 	_install "${LIBNAME}"
@@ -529,7 +480,6 @@ build_opus() {
 
 	_get "http://downloads.xiph.org/releases/opus/opus-${OPUS_VERSION}.tar.gz"
 	_cd "opus-${OPUS_VERSION}"
-	_prepare "${LIBNAME}"
 	_configure "${LIBNAME}" --disable-shared\
 	                        --disable-extra-programs\
 	                        --disable-doc
@@ -548,7 +498,6 @@ build_opusfile() {
 
 	_get "http://downloads.xiph.org/releases/opus/opusfile-${OPUSFILE_VERSION}.tar.gz"
 	_cd "opusfile-${OPUSFILE_VERSION}"
-	_prepare "${LIBNAME}"
 	_configure "${LIBNAME}" --disable-shared\
 	                        --disable-http\
 	                        --disable-doc
@@ -568,7 +517,6 @@ build_png() {
 
 	_get "http://download.sourceforge.net/libpng/libpng-${PNG_VERSION}.tar.gz"
 	_cd "libpng-${PNG_VERSION}"
-	_prepare "${LIBNAME}"
 	_configure "${LIBNAME}" --disable-shared
 	_build "${LIBNAME}"
 	_install "${LIBNAME}"
@@ -589,7 +537,6 @@ build_sdl2() {
 
 	_get "https://www.libsdl.org/release/SDL2-${SDL2_VERSION}.tar.gz"
 	_cd "SDL2-${SDL2_VERSION}"
-	_prepare "${LIBNAME}"
 	_configure "${LIBNAME}" --disable-alsatest
 	_build "${LIBNAME}"
 	_install "${LIBNAME}"
@@ -603,31 +550,12 @@ build_sdl2() {
 	_done
 }
 
-# Build Speex
-build_speex() {
-	LIBNAME="Speex"
-
-	_get "http://downloads.xiph.org/releases/speex/speex-${SPEEX_VERSION}.tar.gz"
-	_cd "speex-${SPEEX_VERSION}"
-	_prepare "${LIBNAME}"
-	_configure "${LIBNAME}" --disable-shared
-	_build "${LIBNAME}"
-	_install "${LIBNAME}"
-
-	rm -rf "${DESTDIR}/lib/libspeex.la"
-	rm -rf "${DESTDIR}/share/aclocal/speex.m4"
-	rm -rf "${DESTDIR}/share/doc/speex/manual.pdf"
-
-	_done
-}
-
 # Build Theora
 build_theora() {
 	LIBNAME="Theora"
 
 	_get "http://downloads.xiph.org/releases/theora/libtheora-${THEORA_VERSION}.tar.bz2"
 	_cd "libtheora-${THEORA_VERSION}"
-	_prepare "${LIBNAME}"
 	_configure "${LIBNAME}" --disable-shared\
 	                        --disable-encode\
 	                        --disable-examples
@@ -648,7 +576,6 @@ build_vorbis() {
 
 	_get "http://downloads.xiph.org/releases/vorbis/libvorbis-${VORBIS_VERSION}.tar.gz"
 	_cd "libvorbis-${VORBIS_VERSION}"
-	_prepare "${LIBNAME}"
 	_configure "${LIBNAME}" --disable-shared
 	_build "${LIBNAME}"
 	_install "${LIBNAME}"
@@ -668,7 +595,6 @@ build_webp() {
 
 	_get "http://downloads.webmproject.org/releases/webp/libwebp-${WEBP_VERSION}.tar.gz"
 	_cd "libwebp-${WEBP_VERSION}"
-	_prepare "${LIBNAME}"
 	_configure "${LIBNAME}" --disable-shared
 	_build "${LIBNAME}"
 	_install "${LIBNAME}"
@@ -688,7 +614,6 @@ build_zlib() {
 
 	_get "http://zlib.net/zlib-${ZLIB_VERSION}.tar.gz"
 	_cd "zlib-${ZLIB_VERSION}"
-	_prepare "${LIBNAME}"
 	_configure "${LIBNAME}" --const\
 	                        --static
 	_build "${LIBNAME}"
@@ -700,29 +625,45 @@ build_zlib() {
 }
 
 
-################################################################################
+#-------------------------------------------------------------------------------
 # Main
-################################################################################
+#-------------------------------------------------------------------------------
 
+# Parse arguments
+if [[ $# -gt 0 ]]
+then
+	echo "Usage: ${0##*/}" >&2
+	exit 2
+fi
+
+# Create directories
+mkdir -p "${BUILDDIR}"
+mkdir -p "${CACHEDIR}"
+rm -rf "${DESTDIR}"  # FIXME
+mkdir -p "${DESTDIR}"
+
+# Enable exit-on-error
+set -e
+
+# Build libraries
 build_curl
-build_freetype
-build_geoip
-build_glew
-build_gmp
-build_jpeg  # [deps: nasm]
-build_lua
-build_naclports
-build_naclsdk
-build_ncurses
-build_nettle  # [deps: gmp]
-build_ogg
-build_openal
-build_opus
-build_opusfile  # [deps: ogg, opus]
-build_png
-build_sdl2
-build_speex  # [deps: ogg]
-build_vorbis  # [deps: ogg]
-build_theora  # [deps: ogg, vorbis, png]
-build_webp
+# build_freetype
+# build_geoip
+# build_glew
+# build_gmp
+# build_jpeg  # [need nasm]
+# build_lua
+# build_naclports
+# build_naclsdk
+# build_ncurses
+# build_nettle  # [deps: gmp]
+# build_ogg
+# build_openal
+# build_opus
+# build_opusfile  # [deps: ogg, opus]
+# build_png
+# build_sdl2
+# build_vorbis  # [deps: ogg]
+# build_theora  # [deps: ogg, vorbis, png]
+# build_webp
 # build_zlib
