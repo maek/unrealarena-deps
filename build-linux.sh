@@ -171,22 +171,21 @@ build_curl ()
 
 	_get "http://curl.haxx.se/download/curl-${CURL_VERSION}.tar.bz2"
 	_cd "curl-${CURL_VERSION}"
-	_configure "${LIBNAME}" --disable-shared
-	# _configure "${LIBNAME}" --disable-shared\
-	#                         --disable-dict\
-	#                         --disable-file\
-	#                         --disable-gopher\
-	#                         --disable-imap\
-	#                         --disable-ldap\
-	#                         --disable-pop3\
-	#                         --disable-rtsp\
-	#                         --disable-smtp\
-	#                         --disable-telnet\
-	#                         --disable-tftp\
-	#                         --without-libidn\
-	#                         --without-librtmp\
-	#                         --without-libssh2\
-	#                         --without-ssl
+	_configure "${LIBNAME}" --disable-shared\
+	                        --disable-dict\
+	                        --disable-file\
+	                        --disable-gopher\
+	                        --disable-imap\
+	                        --disable-ldap\
+	                        --disable-pop3\
+	                        --disable-rtsp\
+	                        --disable-smtp\
+	                        --disable-telnet\
+	                        --disable-tftp\
+	                        --without-libidn\
+	                        --without-librtmp\
+	                        --without-libssh2\
+	                        --without-ssl
 
 	_build "${LIBNAME}"
 	_install "${LIBNAME}"
