@@ -171,32 +171,35 @@ build_curl ()
 
 	_get "http://curl.haxx.se/download/curl-${CURL_VERSION}.tar.bz2"
 	_cd "curl-${CURL_VERSION}"
-	_configure "${LIBNAME}" --disable-shared\
-	                        --disable-dict\
-	                        --disable-file\
-	                        --disable-gopher\
-	                        --disable-imap\
-	                        --disable-ldap\
-	                        --disable-pop3\
-	                        --disable-rtsp\
-	                        --disable-smtp\
-	                        --disable-telnet\
-	                        --disable-tftp\
-	                        --without-libidn\
-	                        --without-librtmp\
-	                        --without-libssh2\
-	                        --without-ssl
+	_configure "${LIBNAME}" --disable-shared
+	# _configure "${LIBNAME}" --disable-shared\
+	#                         --disable-dict\
+	#                         --disable-file\
+	#                         --disable-gopher\
+	#                         --disable-imap\
+	#                         --disable-ldap\
+	#                         --disable-pop3\
+	#                         --disable-rtsp\
+	#                         --disable-smtp\
+	#                         --disable-telnet\
+	#                         --disable-tftp\
+	#                         --without-libidn\
+	#                         --without-librtmp\
+	#                         --without-libssh2\
+	#                         --without-ssl
 
 	_build "${LIBNAME}"
 	_install "${LIBNAME}"
 
-	rm -rf "${DESTDIR}/bin/curl"*
+	# rm -rf "${DESTDIR}/bin/curl"*
 	rm -rf "${DESTDIR}/lib/libcurl.la"
 	rm -rf "${DESTDIR}/share/aclocal/libcurl.m4"
 	rm -rf "${DESTDIR}/share/man/man1/curl"*
 	rm -rf "${DESTDIR}/share/man/man3/curl"*
 	rm -rf "${DESTDIR}/share/man/man3/CURL"*
 	rm -rf "${DESTDIR}/share/man/man3/libcurl"*
+
+	"${DESTDIR}/bin/curl-config" --cflags --static-libs
 
 	_done
 }
