@@ -55,8 +55,8 @@ DESTDIR="${ROOTDIR}/linux-${DEPS_VERSION}"
 
 # Compiler
 # export CHOST="x86_64-unknown-linux-gnu"  # FIXME
-# export CFLAGS="-fPIC -O3 -pipe"  # -fPIC is needed for 64-bit static libraries  # FIXME
-# export CXXFLAGS="-fPIC -O3 -pipe"  # -fPIC is needed for 64-bit static libraries  # FIXME
+# export CFLAGS="-m64 -fPIC -O3 -pipe"  # -fPIC is needed for 64-bit static libraries  # FIXME
+# export CXXFLAGS="-m64 -fPIC -O3 -pipe"  # -fPIC is needed for 64-bit static libraries  # FIXME
 export CFLAGS="-O3 -pipe"
 export CXXFLAGS="-O3 -pipe"
 export CPPFLAGS="${CPPFLAGS:-} -I${DESTDIR}/include"
@@ -88,7 +88,7 @@ _get ()
 
 	# Extract
 	echo "> Extracting '${FILENAME}'..."
-	case ${FILENAME} in
+	case "${FILENAME}" in
 		*.tar.bz2|*.tar.gz|*.tgz)
 			tar xf "${CACHEDIR}/${FILENAME}" -C "${BUILDDIR}" --recursive-unlink
 			;;
@@ -120,6 +120,7 @@ _configure ()
 	# FIXME
 	# ./configure --build="${CHOST}"\
 	#             --prefix="${DESTDIR}"\
+	#             ${OPTIONS}
 }
 
 # Configure the build (cmake)
@@ -202,8 +203,9 @@ build_curl ()
 }
 
 # Build FreeType
-build_freetype() {
-	LIBNAME="FreeType"
+build_freetype ()
+{
+	local LIBNAME="FreeType"
 
 	_get "http://download.savannah.gnu.org/releases/freetype/freetype-${FREETYPE_VERSION}.tar.bz2"
 	_cd "freetype-${FREETYPE_VERSION}"
@@ -213,8 +215,8 @@ build_freetype() {
 
 	_configure "${LIBNAME}" --disable-shared\
 	                        --without-bzip2\
-	                        --without-png\
-	                        --without-harfbuzz
+	                        --without-harfbuzz\
+	                        --without-png
 	_build "${LIBNAME}"
 	_install "${LIBNAME}"
 
@@ -227,8 +229,9 @@ build_freetype() {
 }
 
 # Build GeoIP
-build_geoip() {
-	LIBNAME="GeoIP"
+build_geoip ()
+{
+	local LIBNAME="GeoIP"
 
 	_get "https://github.com/maxmind/geoip-api-c/archive/v${GEOIP_VERSION}.tar.gz"
 	_cd "geoip-api-c-${GEOIP_VERSION}"
@@ -247,8 +250,9 @@ build_geoip() {
 }
 
 # Build GLEW
-build_glew() {
-	LIBNAME="GLEW"
+build_glew ()
+{
+	local LIBNAME="GLEW"
 
 	_get "http://downloads.sourceforge.net/project/glew/glew/${GLEW_VERSION}/glew-${GLEW_VERSION}.tgz"
 	_cd "glew-${GLEW_VERSION}"
@@ -264,8 +268,9 @@ build_glew() {
 }
 
 # Build GMP
-build_gmp() {
-	LIBNAME="GMP"
+build_gmp ()
+{
+	local LIBNAME="GMP"
 
 	_get "https://gmplib.org/download/gmp/gmp-${GMP_VERSION}a.tar.bz2"
 	_cd "gmp-${GMP_VERSION}"
@@ -281,8 +286,9 @@ build_gmp() {
 }
 
 # Build JPEG
-build_jpeg() {
-	LIBNAME="JPEG"
+build_jpeg ()
+{
+	local LIBNAME="JPEG"
 
 	_get "http://downloads.sourceforge.net/project/libjpeg-turbo/${JPEG_VERSION}/libjpeg-turbo-${JPEG_VERSION}.tar.gz"
 	_cd "libjpeg-turbo-${JPEG_VERSION}"
@@ -313,8 +319,9 @@ build_jpeg() {
 }
 
 # Build Lua
-build_lua() {
-	LIBNAME="Lua"
+build_lua ()
+{
+	local LIBNAME="Lua"
 
 	_get "http://www.lua.org/ftp/lua-${LUA_VERSION}.tar.gz"
 	_cd "lua-${LUA_VERSION}"
@@ -332,8 +339,9 @@ build_lua() {
 }
 
 # Build NaCl Ports
-build_naclports() {
-	LIBNAME="NaCl Ports"
+build_naclports ()
+{
+	local LIBNAME="NaCl Ports"
 
 	_get "https://storage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/${NACLSDK_VERSION}/naclports.tar.bz2"
 	_cd "pepper_${NACLSDK_VERSION%%.*}"
@@ -362,8 +370,9 @@ build_naclports() {
 }
 
 # Build NaCl SDK
-build_naclsdk() {
-	LIBNAME="NaCl SDK"
+build_naclsdk ()
+{
+	local LIBNAME="NaCl SDK"
 
 	_get "https://storage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/${NACLSDK_VERSION}/naclsdk_linux.tar.bz2"
 	_cd "pepper_${NACLSDK_VERSION%%.*}"
@@ -396,8 +405,9 @@ build_naclsdk() {
 }
 
 # Build Ncurses
-build_ncurses() {
-	LIBNAME="Ncurses"
+build_ncurses ()
+{
+	local LIBNAME="Ncurses"
 
 	_get "http://ftp.gnu.org/pub/gnu/ncurses/ncurses-${NCURSES_VERSION}.tar.gz"
 	_cd "ncurses-${NCURSES_VERSION}"
@@ -424,8 +434,9 @@ build_ncurses() {
 }
 
 # Build Nettle
-build_nettle() {
-	LIBNAME="Nettle"
+build_nettle ()
+{
+	local LIBNAME="Nettle"
 
 	_get "http://www.lysator.liu.se/~nisse/archive/nettle-${NETTLE_VERSION}.tar.gz"
 	_cd "nettle-${NETTLE_VERSION}"
@@ -442,8 +453,9 @@ build_nettle() {
 }
 
 # Build Ogg
-build_ogg() {
-	LIBNAME="Ogg"
+build_ogg ()
+{
+	local LIBNAME="Ogg"
 
 	_get "http://downloads.xiph.org/releases/ogg/libogg-${OGG_VERSION}.tar.gz"
 	_cd "libogg-${OGG_VERSION}"
@@ -459,8 +471,9 @@ build_ogg() {
 }
 
 # Build OpenAL
-build_openal() {
-	LIBNAME="OpenAL"
+build_openal ()
+{
+	local LIBNAME="OpenAL"
 
 	_get "http://kcat.strangesoft.net/openal-releases/openal-soft-${OPENAL_VERSION}.tar.bz2"
 	_cd "openal-soft-${OPENAL_VERSION}"
@@ -475,8 +488,9 @@ build_openal() {
 }
 
 # Build Opus
-build_opus() {
-	LIBNAME="Opus"
+build_opus ()
+{
+	local LIBNAME="Opus"
 
 	_get "http://downloads.xiph.org/releases/opus/opus-${OPUS_VERSION}.tar.gz"
 	_cd "opus-${OPUS_VERSION}"
@@ -493,8 +507,9 @@ build_opus() {
 }
 
 # Build Opusfile
-build_opusfile() {
-	LIBNAME="Opusfile"
+build_opusfile ()
+{
+	local LIBNAME="Opusfile"
 
 	_get "http://downloads.xiph.org/releases/opus/opusfile-${OPUSFILE_VERSION}.tar.gz"
 	_cd "opusfile-${OPUSFILE_VERSION}"
@@ -512,8 +527,9 @@ build_opusfile() {
 }
 
 # Build PNG
-build_png() {
-	LIBNAME="PNG"
+build_png ()
+{
+	local LIBNAME="PNG"
 
 	_get "http://download.sourceforge.net/libpng/libpng-${PNG_VERSION}.tar.gz"
 	_cd "libpng-${PNG_VERSION}"
@@ -532,8 +548,9 @@ build_png() {
 }
 
 # Build SDL2
-build_sdl2() {
-	LIBNAME="SDL2"
+build_sdl2 ()
+{
+	local LIBNAME="SDL2"
 
 	_get "https://www.libsdl.org/release/SDL2-${SDL2_VERSION}.tar.gz"
 	_cd "SDL2-${SDL2_VERSION}"
@@ -551,8 +568,9 @@ build_sdl2() {
 }
 
 # Build Theora
-build_theora() {
-	LIBNAME="Theora"
+build_theora ()
+{
+	local LIBNAME="Theora"
 
 	_get "http://downloads.xiph.org/releases/theora/libtheora-${THEORA_VERSION}.tar.bz2"
 	_cd "libtheora-${THEORA_VERSION}"
@@ -571,8 +589,9 @@ build_theora() {
 }
 
 # Build Vorbis
-build_vorbis() {
-	LIBNAME="Vorbis"
+build_vorbis ()
+{
+	local LIBNAME="Vorbis"
 
 	_get "http://downloads.xiph.org/releases/vorbis/libvorbis-${VORBIS_VERSION}.tar.gz"
 	_cd "libvorbis-${VORBIS_VERSION}"
@@ -590,8 +609,9 @@ build_vorbis() {
 }
 
 # Build WebP
-build_webp() {
-	LIBNAME="WebP"
+build_webp ()
+{
+	local LIBNAME="WebP"
 
 	_get "http://downloads.webmproject.org/releases/webp/libwebp-${WEBP_VERSION}.tar.gz"
 	_cd "libwebp-${WEBP_VERSION}"
@@ -609,8 +629,9 @@ build_webp() {
 }
 
 # Build zlib
-build_zlib() {
-	LIBNAME="zlib"
+build_zlib ()
+{
+	local LIBNAME="zlib"
 
 	_get "http://zlib.net/zlib-${ZLIB_VERSION}.tar.gz"
 	_cd "zlib-${ZLIB_VERSION}"
@@ -646,8 +667,8 @@ mkdir -p "${DESTDIR}"
 set -e
 
 # Build libraries
-build_curl
-# build_freetype
+# build_curl
+build_freetype
 # build_geoip
 # build_glew
 # build_gmp
