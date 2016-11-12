@@ -668,8 +668,8 @@ set -e
 # build_curl
 # build_freetype
 # build_geoip
-# build_glew
-build_gmp
+build_glew
+# build_gmp
 # build_jpeg  # [need nasm]
 # build_lua
 # build_naclports
