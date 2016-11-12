@@ -114,13 +114,9 @@ _configure ()
 	local OPTIONS="${@:2}"
 
 	echo "> Configuring '${LIBNAME}'..."
-	./configure --prefix="${DESTDIR}"\
+	./configure --build=x86_64-unknown-linux-gnu\
+	            --prefix="${DESTDIR}"\
 	            ${OPTIONS}
-
-	# FIXME
-	# ./configure --build="${CHOST}"\
-	#             --prefix="${DESTDIR}"\
-	#             ${OPTIONS}
 }
 
 # Configure the build (cmake)
@@ -275,6 +271,9 @@ build_gmp ()
 	_cd "gmp-${GMP_VERSION}"
 	_configure "${LIBNAME}" --disable-shared
 	_build "${LIBNAME}"
+
+	make check || exit 1
+
 	_install "${LIBNAME}"
 
 	rm -rf "${DESTDIR}/lib/libgmp.la"
@@ -668,22 +667,22 @@ set -e
 # Build libraries
 # build_curl
 # build_freetype
-build_geoip
+# build_geoip
 # build_glew
-# build_gmp
+build_gmp
 # build_jpeg  # [need nasm]
 # build_lua
 # build_naclports
 # build_naclsdk
 # build_ncurses
-# build_nettle  # [deps: gmp]
+# build_nettle  # [need gmp]
 # build_ogg
 # build_openal
 # build_opus
-# build_opusfile  # [deps: ogg, opus]
+# build_opusfile  # [need ogg, opus]
 # build_png
 # build_sdl2
-# build_vorbis  # [deps: ogg]
-# build_theora  # [deps: ogg, vorbis, png]
+# build_vorbis  # [need ogg]
+# build_theora  # [need ogg, vorbis, png]
 # build_webp
 # build_zlib
