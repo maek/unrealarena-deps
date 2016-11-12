@@ -187,7 +187,6 @@ build_curl ()
 	                        --without-librtmp\
 	                        --without-libssh2\
 	                        --without-ssl
-
 	_build "${LIBNAME}"
 	_install "${LIBNAME}"
 
@@ -236,7 +235,7 @@ build_geoip ()
 	_get "https://github.com/maxmind/geoip-api-c/archive/v${GEOIP_VERSION}.tar.gz"
 	_cd "geoip-api-c-${GEOIP_VERSION}"
 
-	autoreconf -fi &> /dev/null
+	autoreconf -fi &>/dev/null
 
 	_configure "${LIBNAME}" --disable-shared
 	_build "${LIBNAME}"
@@ -668,8 +667,8 @@ set -e
 
 # Build libraries
 # build_curl
-build_freetype
-# build_geoip
+# build_freetype
+build_geoip
 # build_glew
 # build_gmp
 # build_jpeg  # [need nasm]
