@@ -231,7 +231,7 @@ build_geoip ()
 	_get "https://github.com/maxmind/geoip-api-c/archive/v${GEOIP_VERSION}.tar.gz"
 	_cd "geoip-api-c-${GEOIP_VERSION}"
 
-	autoreconf -fi &>/dev/null
+	autoreconf -fiv
 
 	_configure "${LIBNAME}" --disable-shared
 	_build "${LIBNAME}"
@@ -249,10 +249,12 @@ build_glew ()
 {
 	local LIBNAME="GLEW"
 
-	_get "http://downloads.sourceforge.net/project/glew/glew/${GLEW_VERSION}/glew-${GLEW_VERSION}.tgz"
+	_get "http://downloads.sourceforge.net/glew/glew-${GLEW_VERSION}.tgz"
 	_cd "glew-${GLEW_VERSION}"
 
 	export GLEW_DEST="${DESTDIR}"
+
+	# libdir
 
 	_build "${LIBNAME}"
 	_install "${LIBNAME}"
@@ -288,13 +290,12 @@ build_jpeg ()
 {
 	local LIBNAME="JPEG"
 
-	_get "http://downloads.sourceforge.net/project/libjpeg-turbo/${JPEG_VERSION}/libjpeg-turbo-${JPEG_VERSION}.tar.gz"
+	_get "http://downloads.sourceforge.net/libjpeg-turbo/libjpeg-turbo-${JPEG_VERSION}.tar.gz"
 	_cd "libjpeg-turbo-${JPEG_VERSION}"
 
 	sed -i -e "/^docdir/ s:$:/libjpeg-turbo-${JPEG_VERSION}:" Makefile.in
 
-	_configure "${LIBNAME}" "--mandir=${DESTDIR}/share/man"\
-	                        --disable-shared\
+	_configure "${LIBNAME}" --disable-shared\
 	                        --with-jpeg8\
 	                        --without-turbojpeg
 	_build "${LIBNAME}"
@@ -307,11 +308,11 @@ build_jpeg ()
 	rm -rf "${DESTDIR}/bin/wrjpgcom"
 	rm -rf "${DESTDIR}/lib/libjpeg.la"
 	rm -rf "${DESTDIR}/share/doc/libjpeg-turbo-${JPEG_VERSION}"
-	rm -rf "${DESTDIR}/share/man/man1/cjpeg.1"
-	rm -rf "${DESTDIR}/share/man/man1/djpeg.1"
-	rm -rf "${DESTDIR}/share/man/man1/jpegtran.1"
-	rm -rf "${DESTDIR}/share/man/man1/rdjpgcom.1"
-	rm -rf "${DESTDIR}/share/man/man1/wrjpgcom.1"
+	rm -rf "${DESTDIR}/man/man1/cjpeg.1"
+	rm -rf "${DESTDIR}/man/man1/djpeg.1"
+	rm -rf "${DESTDIR}/man/man1/jpegtran.1"
+	rm -rf "${DESTDIR}/man/man1/rdjpgcom.1"
+	rm -rf "${DESTDIR}/man/man1/wrjpgcom.1"
 
 	_done
 }
@@ -529,7 +530,7 @@ build_png ()
 {
 	local LIBNAME="PNG"
 
-	_get "http://download.sourceforge.net/libpng/libpng-${PNG_VERSION}.tar.gz"
+	_get "http://downloads.sourceforge.net/libpng/libpng-${PNG_VERSION}.tar.gz"
 	_cd "libpng-${PNG_VERSION}"
 	_configure "${LIBNAME}" --disable-shared
 	_build "${LIBNAME}"
@@ -668,9 +669,9 @@ set -e
 # build_curl
 # build_freetype
 # build_geoip
-build_glew
+# build_glew
 # build_gmp
-# build_jpeg  # [need nasm]
+build_jpeg  # [need nasm]
 # build_lua
 # build_naclports
 # build_naclsdk
