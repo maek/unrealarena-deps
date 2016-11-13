@@ -291,19 +291,12 @@ build_jpeg ()
 	_get "http://downloads.sourceforge.net/libjpeg-turbo/libjpeg-turbo-${JPEG_VERSION}.tar.gz"
 	_cd "libjpeg-turbo-${JPEG_VERSION}"
 
-	sed -i -e "/^docdir/ s:$:/libjpeg-turbo-${JPEG_VERSION}:" Makefile.in
+	sed -i -e "/^docdir/s:$:/libjpeg-turbo-${JPEG_VERSION}:" Makefile.in
 
 	_configure "${LIBNAME}" --disable-shared\
 	                        --with-jpeg8\
 	                        --without-turbojpeg
 	_build "${LIBNAME}"
-
-	echo "********************************************************************************"
-	echo "********************************************************************************"
-	make check || exit 1
-	echo "********************************************************************************"
-	echo "********************************************************************************"
-
 	_install "${LIBNAME}"
 
 	rm -rf "${DESTDIR}/bin/cjpeg"
@@ -331,9 +324,14 @@ build_lua ()
 	_cd "lua-${LUA_VERSION}"
 
 	sed -i -e "/^PLAT=/s:none:linux:" -e "/^INSTALL_TOP=/s:/usr/local:${DESTDIR}:" Makefile
-	sed -i -e "/^CFLAGS=/s:-O2:-fPIC -O2:" src/Makefile
+	# sed -i -e "/#define LUA_ROOT/s:/usr/local/:${DESTDIR}/:" src/luaconf.h
 
 	_build "${LIBNAME}"
+
+	echo "********************************************************************************"
+	make test || exit 1
+	echo "********************************************************************************"
+
 	_install "${LIBNAME}"
 
 	rm -rf "${DESTDIR}/bin/lua"*
@@ -676,8 +674,8 @@ set -e
 # build_geoip
 # build_glew
 # build_gmp
-build_jpeg  # [need nasm]
-# build_lua
+# build_jpeg  # [need nasm]
+build_lua
 # build_naclports
 # build_naclsdk
 # build_ncurses
